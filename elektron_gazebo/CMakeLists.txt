@@ -165,7 +165,8 @@ install(DIRECTORY launch/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch )
 install(DIRECTORY worlds/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/worlds )
-
+install(DIRECTORY urdf/
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf )
 #############
 ## Testing ##
 #############
