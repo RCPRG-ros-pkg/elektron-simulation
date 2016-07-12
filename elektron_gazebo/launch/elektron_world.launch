@@ -34,7 +34,10 @@ TO DO
  	<arg name="use_sim" value="1"/> <!-- 0 - physical robot | 1 - simulation -->
   </include>
 
-  <node name="control_subsystem_move_server" pkg="elektron_base" type="move_server.py" /> 
+  <node name="control_subsystem_move_server" pkg="elektron_base" type="move_server.py">
+    <param name="maxLinearSpeed" type="double" value="0.254" />
+    <param name="maxAngularSpeed" type="double" value="0.87" />
+  </node> 
   <node name="virtual_effector_tower_controller" pkg="elektron_base" type="tower_controller.py" />
   <node name="virtual_effector_base_controller" pkg="elektron_base" type="base_controller.py"  args="1"/>
   <node name="control_subsystem_estimator" pkg="elektron_base" type="estimator_server.py" />
