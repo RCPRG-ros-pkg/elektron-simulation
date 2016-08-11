@@ -44,26 +44,25 @@ TO DO
   <node name="real_effector_tower_gazebo" pkg="elektron_gazebo" type="tower_real_effector.py" />
   <node name="virtual_receptor_cameras" pkg="elektron_base" type="cameras_controller.py"  args="_1 1 1 1" respawn="true"/>
 
- <!-- <node name="map_server_gazebo" pkg="map_server" type="map_server" args="$(find elektron_navigation)/maps/523_obstacle2.yaml"/> -->
+
  <include file="$(find elektron_navigation)/launch/includes/gmapping.launch" if="$(arg gmapping)"/>
 
-<arg name="nodelet_manager_name" value="nodelet_manager"/>
+	<arg name="nodelet_manager_name" value="nodelet_manager"/>
+	<arg name="publish_nav_vel_topic" value="/mux_vel_nav/cmd_vel"/>
+ 	
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" />
 
- <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" />
-
-  <node pkg="nodelet" type="nodelet" name="yocs_cmd_vel_mux"
-        args="load yocs_cmd_vel_mux/CmdVelMuxNodelet nodelet_manager" output="screen">
-    <param name="yaml_cfg_file" value="$(find elektron_navigation)/param/cmd_mux_gazebo_config.yaml"/>
-<remap from="/yocs_cmd_vel_mux/mux_vel_keyboard/cmd_vel" to="/mux_vel_keyboard/cmd_vel"/>
-<remap from="/yocs_cmd_vel_mux/mux_vel_nav/cmd_vel" to="/mux_vel_nav/cmd_vel"/>
-<remap from="/yocs_cmd_vel_mux/mux_vel_raw/cmd_vel" to="/mux_vel_raw/cmd_vel"/>
-  </node>
+  	<node pkg="nodelet" type="nodelet" name="yocs_cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet $(arg nodelet_manager_name)" output="screen">
+    		<param name="yaml_cfg_file" value="$(find elektron_navigation)/param/cmd_mux_config.yaml"/>
+		<remap from="/yocs_cmd_vel_mux/mux_vel_keyboard/cmd_vel" to="/mux_vel_keyboard/cmd_vel"/>
+		<remap from="/yocs_cmd_vel_mux/mux_vel_nav/cmd_vel" to="$(arg publish_nav_vel_topic)"/>
+		<remap from="/yocs_cmd_vel_mux/mux_vel_raw/cmd_vel" to="/mux_vel_raw/cmd_vel"/>
+		<remap from="/cmd_vel_absolute" to="/elektron/mobile_base_controller/cmd_vel"/>
+	</node>
 
 
-<!--
-  <node name="Velocity_mux" pkg="yocs_cmd_vel_mux" type="yocs_cmd_vel_mux">
-    <param name="yaml_cfg_file" type="string" value="$(find elektron_navigation)/param/cmd_mux_gazebo_config.yaml" />
-  </node>
--->
+	<include file="$(find elektron_bringup)/launch/includes/rapp_move_base.launch">
+		<arg name="publish_vel_topic" value="$(arg publish_nav_vel_topic)"/>
+	</include>
 
 </launch>
