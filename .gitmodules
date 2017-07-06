@@ -1,5 +1,0 @@
-[submodule "gazebo_ros_pkgs"]
-	path = gazebo_ros_pkgs
-	url = https://github.com/ros-simulation/gazebo_ros_pkgs.git
-	branch = indigo-devel
-
