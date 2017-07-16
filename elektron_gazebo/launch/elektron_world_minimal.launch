@@ -1,0 +1,63 @@
+<launch>
+
+<arg name="elektron_world_file"  default="$(find elektron_gazebo)/worlds/elektron_world.world"/>
+<arg name="gui" default="true"/>
+<arg name="base" value="elektron"/> <!-- only elektron -->
+<arg name="laser"    value="$(optenv ELEKTRON_LASER Laser)"/> <!--  Laser, NoLaser   -->
+<arg name="tower" value="$(optenv ELEKTRON_TOWER True)"/>  <!--  Tower, NoTower  --> 
+<arg name="tower_sensor" value="$(optenv ELEKTRON_TOWER_SENSOR rgb)"/>  <!-- kinect, rgb  --> 
+<arg name="gmapping" default="false"/> <!-- include slam mapping to simulation <<gmapping ROS package>> --> 
+<!-- <env name="LIBGL_ALWAYS_SOFTWARE" value="1"/>  --> 
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg elektron_world_file)"/> <!---->
+<arg name="gui" value="$(arg gui)" />
+   <arg name="debug" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+  </include>
+
+
+  <include file="$(find elektron_gazebo)/launch/includes/$(arg base).launch.xml">
+    <arg name="base" value="$(arg base)"/>
+    <arg name="laser" value="$(arg laser)"/>
+    <arg name="tower" value="$(arg tower)"/>
+    <arg name="tower_sensor" value="$(arg tower_sensor)"/>
+    <arg name="use_sim" value="1"/> <!-- 0 - physical robot | 1 - simulation -->
+  </include>
+
+  <!-- 
+<node name="control_subsystem_move_server" pkg="elektron_base" type="move_server.py">
+    <param name="maxLinearSpeed" type="double" value="0.254" />
+    <param name="maxAngularSpeed" type="double" value="0.87" />
+  </node> 
+-->
+  <node name="virtual_effector_tower_controller" pkg="elektron_base" type="tower_controller.py" />
+  <node name="virtual_effector_base_controller" pkg="elektron_base" type="base_controller.py"  args="1"/>
+<!--
+  <node name="control_subsystem_estimator" pkg="elektron_base" type="estimator_server.py" />
+-->
+  <node name="real_effector_tower_gazebo" pkg="elektron_gazebo" type="tower_real_effector.py" />
+  <node name="virtual_receptor_cameras" pkg="elektron_base" type="cameras_controller.py"  args="_1 1 1 1" respawn="true"/>
+
+<!--
+ <include file="$(find elektron_navigation)/launch/includes/gmapping.launch" if="$(arg gmapping)"/>
+-->
+	<arg name="nodelet_manager_name" value="nodelet_manager"/>
+	<arg name="publish_nav_vel_topic" value="/mux_vel_nav/cmd_vel"/>
+ 	
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" />
+
+  	<node pkg="nodelet" type="nodelet" name="yocs_cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet $(arg nodelet_manager_name)" output="screen">
+    		<param name="yaml_cfg_file" value="$(find elektron_navigation)/param/cmd_mux_config.yaml"/>
+		<remap from="/yocs_cmd_vel_mux/mux_vel_keyboard/cmd_vel" to="/mux_vel_keyboard/cmd_vel"/>
+		<remap from="/yocs_cmd_vel_mux/mux_vel_nav/cmd_vel" to="$(arg publish_nav_vel_topic)"/>
+		<remap from="/yocs_cmd_vel_mux/mux_vel_raw/cmd_vel" to="/mux_vel_raw/cmd_vel"/>
+		<remap from="/cmd_vel_absolute" to="/elektron/mobile_base_controller/cmd_vel"/>
+	</node>
+
+<!--
+	<include file="$(find elektron_bringup)/launch/includes/rapp_move_base.launch">
+		<arg name="publish_vel_topic" value="$(arg publish_nav_vel_topic)"/>
+	</include>
+-->
+</launch>
